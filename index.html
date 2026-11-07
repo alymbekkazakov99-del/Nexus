@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nexus</title>
+    <link rel="stylesheet" href="./style.css" />
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="icon" href="./icon_2.svg" />
+    <meta name="theme-color" content="#04060f" />
+  </head>
+  <body class="auth">
+    <script>
+      // Если файл не найден или в коде ошибка — сверху появится красная полоса с понятным текстом
+      (function () {
+        function bar(t) {
+          var b = document.getElementById("errbar");
+          if (!b) {
+            b = document.createElement("div");
+            b.id = "errbar";
+            b.style.cssText =
+              "position:fixed;z-index:99999;left:0;right:0;top:0;padding:10px 14px;background:#b00020;color:#fff;font:13px/1.4 system-ui;white-space:pre-wrap";
+            document.body.appendChild(b);
+          }
+          b.textContent += t + "\n";
+        }
+        window.addEventListener(
+          "error",
+          function (e) {
+            if (e.target && e.target.tagName === "SCRIPT") {
+              bar(
+                "Не найден файл: " +
+                  e.target.getAttribute("src") +
+                  " — проверьте, что он лежит в нужной папке",
+              );
+            } else if (e.message) {
+              bar(
+                "Ошибка: " +
+                  e.message +
+                  " (" +
+                  String(e.filename || "")
+                    .split("/")
+                    .pop() +
+                  ":" +
+                  e.lineno +
+                  ")",
+              );
+            }
+          },
+          true,
+        );
+      })();
+    </script>
+
+    <div class="app">
+      <!-- БОКОВАЯ НАВИГАЦИЯ -->
+      <aside class="sidebar">
+        <div class="logo">
+          <div class="logo-icon">S</div>
+          <div><strong>NEXUS</strong><span>PERSONAL OS</span></div>
+        </div>
+        <nav id="nav"></nav>
+        <div class="sidebar-bottom" id="sbot"></div>
+      </aside>
+      <!-- ОСНОВНАЯ ОБЛАСТЬ -->
+      <main class="main">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">ИНТЕРФЕЙС</p>
+            <h1 id="pageTitle">Обзор</h1>
+          </div>
+          <div class="topbar-actions">
+            <button class="b" data-act="hist">☷ История</button>
+            <div class="player-mini">
+              <div class="avatar" id="topAvatar">И</div>
+              <div>
+                <strong id="topPlayerName">Имя</strong
+                ><span id="topPlayerLevel">Уровень 1</span>
+              </div>
+            </div>
+          </div>
+        </header>
+        <section id="view" class="page"></section>
+      </main>
+    </div>
+    <div id="modal" class="modal" hidden></div>
+    <div id="toast" class="toast" hidden></div>
+    <!-- Порядок важен: ядро → интерфейс → функции → экраны → новые разделы → запуск -->
+    <script src="./storage.js"></script>
+    <script src="./state.js"></script>
+    <script src="./xp.js"></script>
+    <script src="./schedule.js"></script>
+    <script src="./wave.js"></script>
+    <script src="./ui.js"></script>
+    <script src="./goals.js"></script>
+    <script src="./extras.js"></script>
+    <script src="./auth.js"></script>
+    <script src="./mastery.js"></script>
+    <script src="./panels.js"></script>
+    <script src="./shell.js"></script>
+    <script src="./screens.js"></script>
+    <script src="./dialogs.js"></script>
+    <script src="./settings.js"></script>
+    <script src="./insights.js"></script>
+    <script src="./wealth.js"></script>
+    <script src="./phone.js"></script>
+    <script src="./community.js"></script>
+    <script src="./tree.js"></script>
+    <script src="./security.js"></script>
+    <script src="./tools.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
