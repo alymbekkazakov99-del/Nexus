@@ -95,13 +95,13 @@ const PanelActs = {
   },
   nextgo: (id) => {
     S.tab = "focus";
+    if (!Focus.t0) Focus.pick = id;
     Audit.add(
       "Выбрано рекомендованное действие",
       S.skills.find((k) => k.id === id)?.name || "",
     );
     save();
     UI.render();
-    $("fsk").value = id;
     return 1;
   },
 };

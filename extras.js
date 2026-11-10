@@ -39,6 +39,29 @@ Object.assign(Focus, {
       this.t0 = null;
     }
     clearInterval(this.tick);
+    this.tick = null;
+  },
+  // выбранный навык запоминается; сессия сохраняется, чтобы пережить смену раздела и перезагрузку
+  sel() {
+    return this.pick && S.skills.some((k) => k.id === this.pick)
+      ? this.pick
+      : (S.skills[0] || {}).id;
+  },
+  persist() {
+    const r =
+      this.t0 || this.base > 0
+        ? { pick: this.pick, base: this.base, t0: this.t0 }
+        : null;
+    if (JSON.stringify(r) !== JSON.stringify(S.focusRun || null)) {
+      S.focusRun = r;
+      save();
+    }
+  },
+  clear() {
+    this.stop();
+    this.base = 0;
+    this.pick = null;
+    this.restored = false;
   },
 });
 Object.defineProperty(Focus, "sec", {
@@ -51,7 +74,7 @@ Object.defineProperty(Focus, "sec", {
 UI.focus = function () {
   const f = Day.get(today()).focusSec || 0;
   return `<section class="card"><h3>Таймер</h3><div class="timer" id="tm">00:00:00</div>
- <p><select id="fsk">${S.skills.map((k) => `<option value="${k.id}">${esc(k.name)}</option>`).join("")}</select></p>
+ <p><select id="fsk" ${Focus.t0 ? "disabled" : ""}>${S.skills.map((k) => `<option value="${k.id}" ${k.id === Focus.sel() ? "selected" : ""}>${esc(k.name)}</option>`).join("")}</select></p>${Focus.t0 ? '<p class="dim">Навык закреплён, пока идёт таймер. Поставьте паузу или завершите, чтобы сменить.</p>' : ""}
  <p><button class="b p" data-act="fgo">Старт / Продолжить</button> <button class="b" data-act="fpause">Пауза</button> <button class="b" data-act="fend">Завершить</button> <button class="b" data-act="freset">Сбросить</button></p>
  <p class="dim">XP считается по секундам: минута = 1 XP × сложность навыка. Фокус сегодня: ${hms(f)}.</p></section>`;
 };
@@ -211,26 +234,26 @@ UI.levelUp = function (L) {
 const ExtraActs = {
   fgo: () => {
     if (!Focus.t0) {
+      const f = document.getElementById("fsk");
+      if (f && f.value) Focus.pick = f.value;
       Focus.t0 = Date.now();
       Focus.tick = setInterval(() => Focus.paint(), 250);
+      Focus.persist();
     }
-    return 1;
   },
   fpause: () => {
     Focus.stop();
-    Focus.paint();
-    return 1;
+    Focus.persist();
   },
   freset: () => {
     Focus.stop();
     Focus.base = 0;
-    Focus.paint();
-    return 1;
+    Focus.persist();
   },
   fend: () => {
     Focus.stop();
     const s = Focus.sec,
-      k = S.skills.find((x) => x.id === $("fsk").value);
+      k = S.skills.find((x) => x.id === Focus.sel());
     if (s < 10 || !k) {
       UI.toast("Меньше 10 секунд — XP не начисляется");
       return 1;
@@ -245,6 +268,7 @@ const ExtraActs = {
       "Фокус " + hms(s) + " × " + k.diff + " × бонус серии",
     ]);
     Focus.base = 0;
+    Focus.persist();
     UI.toast(`+${xp} XP · ${k.name} · ${hms(s)}`);
   },
   slsave: () => {
@@ -280,4 +304,24 @@ const ExtraActs = {
       xp: 0,
     });
   },
+};
+// смена навыка вручную запоминается; после входа таймер продолжается с того же места
+document.addEventListener("change", (e) => {
+  if (e.target.id === "fsk") {
+    Focus.pick = e.target.value;
+    Focus.persist();
+  }
+});
+const _rf = UI.render;
+UI.render = function () {
+  if (S.focusRun && !Focus.restored) {
+    Focus.restored = true;
+    const r = S.focusRun;
+    Focus.pick = r.pick;
+    Focus.base = r.base || 0;
+    Focus.t0 = r.t0 || null;
+    if (Focus.t0 && !Focus.tick)
+      Focus.tick = setInterval(() => Focus.paint(), 250);
+  }
+  _rf.call(this);
 };

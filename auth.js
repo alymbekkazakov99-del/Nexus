@@ -93,11 +93,18 @@ const AuthActs = {
       "Чтобы вернуться, понадобится пароль.",
       () => {
         Focus.stop();
-        Store.lock();
-        S = defaults();
-        Wave.sel = null;
-        Auth.err = "";
-        Auth.screen("login");
+        S.focusRun =
+          Focus.base > 0
+            ? { pick: Focus.pick, base: Focus.base, t0: null }
+            : null;
+        Store.persist(S).then(() => {
+          Focus.clear();
+          Store.lock();
+          S = defaults();
+          Wave.sel = null;
+          Auth.err = "";
+          Auth.screen("login");
+        });
         return 1;
       },
       "Выйти",
